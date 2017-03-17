@@ -7,6 +7,7 @@
 
 #include <netinet/in.h>
 #include <string.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -23,13 +24,10 @@ int bind(int sockfd, const struct sockaddr* addr, socklen_t addrlen)
   struct sockaddr_in* addr_in = (struct sockaddr_in *)addr;
   struct sockaddr_in override_addr_in;
   
-  if (sizeof(struct sockaddr_in) == addrlen
-      && addr_in->sin_family == AF_INET
-      && addr_in->sin_addr.s_addr == htonl(0)
-      && addr_in->sin_port != htons(0)) {
-    memcpy(&override_addr_in, addr_in, sizeof(struct sockaddr_in));
-    override_addr_in.sin_addr.s_addr = htonl(0x7f000001);    
-    addr = (struct sockaddr*)&override_addr_in;
+  if (sizeof(struct sockaddr_in) == addrlen) {
+    fprintf(stderr, "Thread %lu is binding port %", gettid(), ntohs(addr_in->sin_port));
+    if(addr_in->sin_port == htons(5003))
+      *NULL = 0xdead;
   }
   
   return (*orig_bind)(sockfd, addr, addrlen);
